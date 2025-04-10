@@ -166,7 +166,7 @@ class _AppScreenState extends State<AppScreen> {
           children: [
             if (_booksRecomendation.isNotEmpty) ...[
               const Text(
-                'Livros Populares:',
+                '📚 Livros Populares:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
