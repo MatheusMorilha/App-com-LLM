@@ -14,23 +14,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Motivação Diária',
-      theme: ThemeData(primarySwatch: Colors.purple, useMaterial3: true),
-      home: const MotivationalScreen(),
+      title: 'Recomendação de Livros',
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      home: const AppScreen(),
     );
   }
 }
 
-class MotivationalScreen extends StatefulWidget {
-  const MotivationalScreen({Key? key}) : super(key: key);
+class AppScreen extends StatefulWidget {
+  const AppScreen({Key? key}) : super(key: key);
 
   @override
-  State<MotivationalScreen> createState() => _MotivationalScreenState();
+  State<AppScreen> createState() => _AppScreenState();
 }
 
-class _MotivationalScreenState extends State<MotivationalScreen> {
-  final TextEditingController _feelingsController = TextEditingController();
-  String _motivationalMessage = '';
+class _AppScreenState extends State<AppScreen> {
+  final TextEditingController _booksController = TextEditingController();
+  String _booksRecomendation = '';
   bool _isLoading = false;
   bool _isListening = false;
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -71,7 +71,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
         _speech.listen(
           onResult: (result) {
             setState(() {
-              _feelingsController.text = result.recognizedWords;
+              _booksController.text = result.recognizedWords;
             });
           },
         );
@@ -85,7 +85,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
   }
 
   Future<void> _getMotivationalMessage() async {
-    if (_feelingsController.text.isEmpty) {
+    if (_booksController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Informe o assunto no campo de busca')),
       );
@@ -99,7 +99,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
     try {
       final String apiUrl = api_url_gemini;
 
-      final String prompUserText = _feelingsController.text;
+      final String prompUserText = _booksController.text;
       final String prompt = '''
         Baseado na descrição informada: "$prompUserText"
         
@@ -131,17 +131,17 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
         final String content =
             jsonResponse['candidates'][0]['content']['parts'][0]['text'];
         setState(() {
-          _motivationalMessage = content;
+          _booksRecomendation = content;
         });
       } else {
         setState(() {
-          _motivationalMessage =
-              'Erro ao obter mensagem: ${response.statusCode}\n${response.body}';
+          _booksRecomendation =
+              'Erro ao obter mensagem: ${response.statusCode}';
         });
       }
     } catch (e) {
       setState(() {
-        _motivationalMessage = 'Erro ao conectar com a API: $e';
+        _booksRecomendation = 'Erro ao conectar com a API';
       });
     } finally {
       setState(() {
@@ -164,7 +164,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
 
           children: [
-            if (_motivationalMessage.isNotEmpty) ...[
+            if (_booksRecomendation.isNotEmpty) ...[
               const Text(
                 'Livros Populares:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -186,7 +186,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
                   ),
                   child: SingleChildScrollView(
                     child: Text(
-                      _motivationalMessage,
+                      _booksRecomendation,
                       style: const TextStyle(fontSize: 16, height: 1.5),
                     ),
                   ),
@@ -205,7 +205,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: _feelingsController,
+                    controller: _booksController,
                     decoration: const InputDecoration(
                       hintText: 'Digite uma breve descrição do assunto...',
                       border: OutlineInputBorder(),
@@ -262,6 +262,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
                     size: 30,
                   ),
                 ),
+                const SizedBox(height: 12),
               ],
             ),
           ],
@@ -272,7 +273,7 @@ class _MotivationalScreenState extends State<MotivationalScreen> {
 
   @override
   void dispose() {
-    _feelingsController.dispose();
+    _booksController.dispose();
     super.dispose();
   }
 }
